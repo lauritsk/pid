@@ -1,6 +1,6 @@
-FROM dhi.io/uv:0.11.8-debian13@sha256:0d696ef68d115128547e50bb9862cc565319841a21541f956860830dc2ba74ae AS uv
+FROM dhi.io/uv:0.11.16-debian13@sha256:2af3731aa4e97ec88e5d739745b0fde1b70ea53bda512dadd81984d039149715 AS uv
 
-FROM dhi.io/python:3.14.4-debian13-dev@sha256:8d91cf3840e88d303f55fa61d67eb34c3c760c394edfb1d754d9b88b5f68cb2b AS builder
+FROM dhi.io/python:3.14.4-debian13-dev@sha256:ef2fa2beab6aa256da894c5c4d7cd81483764f68fc7814f5e8bab26d2c89dc6c AS builder
 ARG TARGETPLATFORM
 COPY --from=uv /usr/local/bin/uv /usr/local/bin/
 WORKDIR /app
@@ -10,7 +10,7 @@ RUN python -m venv /app/.venv
 COPY ${TARGETPLATFORM}/*.whl /tmp/
 RUN uv pip install --python /app/.venv/bin/python /tmp/*.whl
 
-FROM dhi.io/python:3.14.4-debian13@sha256:0d5b16a6304ae84e58b163a0daf4b7dec6df8c829302d8f72948ab131593034e
+FROM dhi.io/python:3.14.4-debian13@sha256:edb8192e94aef7bce840d1188f2e19b5fbd4f8aa7bd89bfb2c44eda0eca97346
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     VIRTUAL_ENV=/app/.venv \
