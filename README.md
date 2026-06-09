@@ -8,12 +8,6 @@ result, generates a Conventional Commit title and PR body, commits the final
 changes, opens or updates a PR, waits for checks, asks the agent to fix failures,
 squash-merges the PR, and cleans up.
 
-## Status
-
-- Maturity: strategic automation CLI
-- Primary command: `mise run check`
-- Release target: GitHub release / Python package artifact
-
 ## Features
 
 - Creates a clean branch in a sibling git worktree.
@@ -42,37 +36,10 @@ squash-merges the PR, and cleans up.
 - A coding-agent CLI on `PATH` (`pi` by default)
 - An authenticated forge CLI on `PATH` (`gh` by default)
 - A commit-title verifier on `PATH` (`cog` by default, optional)
-- `mise` if you want repository-managed development tasks
 
 > [!IMPORTANT]
 > Run pid from a clean main worktree. pid stops if the main worktree has
 > uncommitted or untracked changes.
-
-## Installation
-
-Install from a checkout:
-
-```sh
-uv tool install .
-```
-
-Run from the checkout during development:
-
-```sh
-mise trust
-mise run pid -- --version
-```
-
-Container images are published to GHCR:
-
-```sh
-docker pull ghcr.io/lauritsk/pid:latest
-docker run --rm ghcr.io/lauritsk/pid:latest --version
-```
-
-The image entrypoint is `pid`. The image is intentionally minimal; derive your
-own image or provide host tools when full workflow runs need `git`, a forge CLI,
-an agent CLI, or a commit-title verifier.
 
 ## Quick start
 
@@ -277,7 +244,7 @@ Disable supervised agent mode, or move run state to an absolute directory:
 enabled = false
 store_dir = "/var/lib/pid/runs"
 max_parallel_agents = 4
-validation_commands = ["mise run check"]
+validation_commands = ["python -m pytest"]
 ```
 
 When `store_dir` is empty, `pid agent` writes under
@@ -290,14 +257,12 @@ bootstrap, worktree creation, agent execution, pauses, or failures is rejected
 with a clear message because full context hydration is not implemented.
 
 Configure any project setup or harness trust command with `setup_command`.
-The default is `["mise", "trust", "."]` and is skipped when `mise` is not on
-`PATH`; set it to `[]` to disable it. Custom setup commands fail the workflow
-when the executable is missing or returns a non-zero exit. Legacy
-`trust_mise = false` still disables the default command.
+The default is `[]`. Custom setup commands fail the workflow when the executable
+is missing or returns a non-zero exit.
 
 ```toml
 [workflow]
-setup_command = ["mise", "trust", "."]
+setup_command = []
 ```
 
 ### Agent examples
@@ -376,46 +341,3 @@ pr_merged_at_args = []
 
 Extensions can hook, add, replace, or disable workflow steps. They can also add
 commands under `pid x ...`.
-
-See [docs/EXTENSIONS.md](docs/EXTENSIONS.md) for the extension API, trust
-boundary, and runnable local-extension examples.
-
-## Development
-
-This repository uses `mise` for tools and tasks.
-
-```sh
-mise trust
-mise run lint
-mise run test
-mise run build
-mise run check
-```
-
-Use `mise run fix` to run formatters and fixers. The test task runs pytest in
-parallel and enforces 95% total coverage.
-
-Release helpers are namespaced under `release:*`:
-
-```sh
-mise run release:bump
-mise run release:publish
-```
-
-Tagged releases publish `ghcr.io/lauritsk/pid` with GoReleaser. Release CI must
-have `DHI_USERNAME` and `DHI_PASSWORD` secrets so it can pull Docker Hardened
-Images from `dhi.io`.
-
-### Project layout
-
-- `src/pid/cli.py`: Typer command-line wiring.
-- `src/pid/workflow.py`: high-level pid lifecycle.
-- `src/pid/orchestrator.py`, `run_state.py`, `failures.py`, and `policy.py`:
-  supervised agent mode, durable state, typed failures, and deterministic
-  recovery policy.
-- `src/pid/repository.py`: git, worktree, and commit operations.
-- `src/pid/forge.py`: configurable forge/PR CLI operations.
-- `src/pid/prompts.py`: agent prompts and untrusted output isolation.
-- `src/pid/commands.py`, `output.py`, `parsing.py`, `utils.py`, `models.py`, and
-  `errors.py`: shared support code.
-- `tests/fakes.py`: fake command harness for flow tests.
