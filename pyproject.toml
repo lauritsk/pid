@@ -9,7 +9,7 @@ authors = [{ name = "Karl Hans Laurits", email = "karl@laurits.dev" }]
 dependencies = [
   "plumbum==1.10.0",
   "rich==15.0.0",
-  "typer==0.25.1",
+  "typer==0.26.6",
 ]
 
 [project.scripts]
